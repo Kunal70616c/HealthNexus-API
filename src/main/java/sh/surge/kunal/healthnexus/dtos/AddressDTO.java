@@ -8,6 +8,9 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
+// AddressDTO is used to transfer data between the controller and the service layer
+// Because Model class can't be exposed to the client
+// This is a security measure
 public class AddressDTO {
 	
 	

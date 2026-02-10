@@ -17,33 +17,36 @@ import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
 import jakarta.persistence.criteria.Root;
 
-@Service
-@Transactional(readOnly = true)
+@Service // marks the class as a service component
+@Transactional(readOnly = true) //  Makes the class transactional
+// readOnly = true means that transaction does not apply on read operations
 public class PatientServiceImpl implements PatientService {
     @Autowired 
-	private PatientRepository patientRepository;
+	private PatientRepository patientRepository; // PatientRepository is used to perform database operations
     @Autowired
-    private EntityManager entityManager;
+    private EntityManager entityManager; // EntityManager is used to perform database operations , specifically for criteria queries
 	@Override
 	@Transactional(propagation = Propagation.SUPPORTS,timeout = 100, rollbackFor = PatientNullException.class)
+	// propagation = Propagation.SUPPORTS means that transaction does not apply on read operations
+	// timeout = 100 means that transaction will be rolled back if it takes more than 100 seconds
+	// rollbackFor = PatientNullException.class means that transaction will be rolled back if PatientNullException is thrown
 	public Patient addPatient(Patient patient) {
-		// TODO Auto-generated method stub
 		if(patient!=null) {
 			return patientRepository.save(patient);
 		}else
-			throw new PatientNullException("Patient object is null");
+			throw new PatientNullException("Patient object is null"); // throws PatientNullException if patient is null
 		
 	}
 
 	@Override
 	public List<Patient> getAllPatients() {
-		// TODO Auto-generated method stub
+		// returns all patients from the database
 		return patientRepository.findAll();
 	}
 
 	@Override
 	public Patient getPatientByAdhaarCardNo(String adhaarCardNo) {
-		// TODO Auto-generated method stub
+		// returns patient by adhaar card no
 		return patientRepository.findById(adhaarCardNo)
 				.orElseThrow(()->
 				new PatientNotFoundException("Patient not found in the "
@@ -52,7 +55,9 @@ public class PatientServiceImpl implements PatientService {
 
 	@Override
 	public List<Patient> getPatientByPhoneNumber(long contactNumber) {
-		// TODO Auto-generated method stub
+		// returns patient by phone number
+        // using criteria query to get patient by phone number
+        // CriteriaBuilder is used to build criteria queries, cause phone number is not unique
 		CriteriaBuilder cb = entityManager.getCriteriaBuilder();
 		CriteriaQuery<Patient> cq = cb.createQuery(Patient.class);
 		Root<Patient> patient = cq.from(Patient.class);
@@ -63,8 +68,9 @@ public class PatientServiceImpl implements PatientService {
 
 	@Override
 	@Transactional(rollbackFor = PatientNotFoundException.class)
+    // rollbackFor = PatientNotFoundException.class means that transaction will be rolled back if PatientNotFoundException is thrown
 	public Patient updatePatient(String adhaarCardNo, long phoneNumber, String email) {
-		// TODO Auto-generated method stub
+		// updates patient by adhaar card no
 		if(patientRepository.existsById(adhaarCardNo) && email!=null && phoneNumber!=0) {
 			Patient patient=patientRepository.findById(adhaarCardNo).get();
 			patient.setContactNumber(phoneNumber);
@@ -75,10 +81,10 @@ public class PatientServiceImpl implements PatientService {
 	}
 
 	@Override
-	@Transactional
+	@Transactional // transaction is required for delete operation
 	public boolean deletePatient(String adhaarCardNo) {
 		boolean status=false;
-		// TODO Auto-generated method stub
+		// deletes patient by adhaar card no
 		if(patientRepository.existsById(adhaarCardNo)) {
 			patientRepository.deleteById(adhaarCardNo);
 			status=true;
@@ -88,7 +94,7 @@ public class PatientServiceImpl implements PatientService {
 
 	@Override
 	public Patient getPatientByEmail(String email) {
-		// TODO Auto-generated method stub
+		// returns patient by email
 		return patientRepository.findByEmail(email)
 				.orElseThrow(()->new 
 						PatientNotFoundException("Patient not found "

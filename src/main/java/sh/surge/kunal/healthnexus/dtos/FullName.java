@@ -10,9 +10,10 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+// FullName class is used to store the full name of a person
 public class FullName {
-	@NotNull
-	@NotEmpty
+	@NotNull // Validates Can't be null
+	@NotEmpty // Validates Can't be empty
 	@Pattern(regexp = "^[A-Za-z]+$", message = "First name must contain only alphabetic characters")
 	private String firstName;
 	@NotNull

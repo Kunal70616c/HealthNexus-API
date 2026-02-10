@@ -12,7 +12,10 @@ import lombok.experimental.SuperBuilder;
 @AllArgsConstructor
 @EqualsAndHashCode(callSuper = false)
 @SuperBuilder
-
+// PatientDTO extends PersonDTO
+// It is used to transfer data between the controller and the service layer
+// Because Model class can't be exposed to the client
+// This is a security measure
 public class PatientDTO extends PersonDTO implements Serializable {
 	
 	private String ailment;	
