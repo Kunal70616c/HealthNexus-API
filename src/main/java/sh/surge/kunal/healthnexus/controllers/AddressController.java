@@ -30,19 +30,19 @@ public class AddressController {
 	@Autowired
 	private AddressMapper addressMapper;
 	@PostMapping("/v1.0/{adhaarCardNo}")
-	public ResponseEntity<GenericMessage> addAddress(@RequestBody AddressDTO addressDTO,@PathParam("adhaarCardNo") String adhaarCardNo){
+	public ResponseEntity<GenericMessage<String>> addAddress(@RequestBody AddressDTO addressDTO,@PathParam("adhaarCardNo") String adhaarCardNo){
 		//dto to entity
 		Address address=addressMapper.dtotoentity(addressDTO);
 		Address savedAddress=addressService.addAddress(adhaarCardNo,address);
 		//entity to dto
 		AddressResponse addressResponse=addressMapper.entitytodto(savedAddress);
-		GenericMessage genericMessage=new GenericMessage(addressResponse);
+		GenericMessage genericMessage=new GenericMessage<>(addressResponse);
 		return ResponseEntity.status(HttpStatus.CREATED)
 				.body(genericMessage);
 	}
 	
 	@GetMapping("/v1.0")
-	public ResponseEntity<GenericMessage> getAllAddresses(@RequestParam String adhaarCardNo){
+	public ResponseEntity<GenericMessage<String>> getAllAddresses(@RequestParam String adhaarCardNo){
 		List<Address> addresses=addressService.getAllAddresses(adhaarCardNo);
 		List<AddressResponse> addressResponse=addressMapper.entitytodto(addresses);
 		return ResponseEntity.status(HttpStatus.OK)

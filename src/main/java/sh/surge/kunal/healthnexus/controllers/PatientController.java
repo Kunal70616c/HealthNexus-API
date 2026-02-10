@@ -30,19 +30,20 @@ import jakarta.websocket.server.PathParam;
 @RequestMapping("/patients")
 public class PatientController {
     @Autowired
-	private PatientService patientService;
+	private PatientService patientService; //Service for patient
     @Autowired
-    private PatientMapper patientMapper;
-    @PreAuthorize("hasAnyAuthority('SCOPE_developer')")
+    private PatientMapper patientMapper; //Mapping Patient to PatientResponse
+    @PreAuthorize("hasAnyAuthority('SCOPE_developer')") //Only developer can add patient
     @PostMapping("/v1.0")
-    public ResponseEntity<GenericMessage> addPatient(@Valid @RequestBody PatientDTO patientDTO) {
+    public ResponseEntity<GenericMessage<String>> addPatient(@Valid @RequestBody PatientDTO patientDTO) {
 		//mapping DTO to entity
+        //Building Full Name
     	FullName fullName = FullName.builder()
 				.firstName(patientDTO.getFullName().getFirstName())
 				.lastName(patientDTO.getFullName().getLastName())
 				.build();
+        //Building Patient
     	Patient patient = Patient.builder()
-    			
     			.fullName(fullName)
     			.dateOfBirth(patientDTO.getDateOfBirth())
     			.email(patientDTO.getEmail())
@@ -51,12 +52,15 @@ public class PatientController {
     			.ailment(patientDTO.getAilment())
     			.occupation(patientDTO.getOccupation())
     			.build();
+        //Saving patient
     	Patient savedPatient = patientService.addPatient(patient);
     	PatientResponse patientResponse = patientMapper.toDTOs(savedPatient);
     	return ResponseEntity.status(HttpStatus.CREATED)
 				.body(new GenericMessage(patientResponse));
 	}
+
     @PreAuthorize("hasAnyAuthority('SCOPE_tester','SCOPE_developer')")
+    //Only tester and developer can get all patients
     @GetMapping("/v1.0")
     public List<PatientResponse> getAllPatients() {
     	List<Patient> patients=	patientService.getAllPatients();
@@ -65,17 +69,21 @@ public class PatientController {
     	
     }
     @PreAuthorize("hasAnyAuthority('SCOPE_tester','SCOPE_developer')")
+    //Only tester and developer can get patient by adhaar card no
     @GetMapping("/v1.0/{adhaarCardNo}")
-	public ResponseEntity<GenericMessage> getPatientByAdhaarCardNo(@PathParam("adhaarCardNo") String adhaarCardNo) {
-		
+    // @PathParam("adhaarCardNo") is used to get the adhaar card no from the request
+	public ResponseEntity<GenericMessage<String>> getPatientByAdhaarCardNo(@PathParam("adhaarCardNo") String adhaarCardNo) {
+		//Getting patient by adhaar card no and mapping to response
+        //Building Patient
 		Patient patient = patientService.getPatientByAdhaarCardNo(adhaarCardNo);
 		PatientResponse patientResponse = patientMapper.toDTOs(patient);
     	return ResponseEntity.status(HttpStatus.ACCEPTED)
 				.body(new GenericMessage(patientResponse));
 	}
     @PreAuthorize("hasAnyAuthority('SCOPE_developer')")
+    //Only developer can update patient by adhaar card no
     @PatchMapping("/v1.0")
-    public ResponseEntity<GenericMessage> updatePatientByEmailAndPhoneNumber(
+    public ResponseEntity<GenericMessage<String>> updatePatientByEmailAndPhoneNumber(
     		@RequestParam String adhaarCardNo,
     		@RequestParam long contactNo,@RequestParam String email) {
     		Patient updatedPatient = patientService.updatePatient(adhaarCardNo, contactNo, email);
@@ -85,16 +93,16 @@ public class PatientController {
     }
     @PreAuthorize("hasAnyAuthority('SCOPE_developer')")
     @DeleteMapping("/v1.0")
-    public ResponseEntity<GenericMessage> deletePatientByAdhaarCardNo(
+    public ResponseEntity<GenericMessage<String>> deletePatientByAdhaarCardNo(
 			@RequestParam String adhaarCardNo) {
 			boolean isDeleted = patientService.deletePatient(adhaarCardNo);
 			if(isDeleted) {
 			    return ResponseEntity.status(HttpStatus.ACCEPTED)
-						.body(new GenericMessage("Patient deleted successfully with Adhaar Card No: " 
+						.body(new GenericMessage<>("Patient deleted successfully with Adhaar Card No: "
 				+ adhaarCardNo));
 			} else {
 				return ResponseEntity.status(HttpStatus.NOT_FOUND)
-						.body(new GenericMessage("Patient not found with Adhaar Card No: " 
+						.body(new GenericMessage<>("Patient not found with Adhaar Card No: "
 				+ adhaarCardNo));
 			}
 	}
